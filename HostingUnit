@@ -1,0 +1,174 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    class HostingUnit : IComparable
+    {
+        static int stSerialKey=10000000;
+        public readonly int HostingUnitKey;
+        public bool[,] diary;//state of hosting unit occupancy
+        public HostingUnit()
+        {
+
+            HostingUnitKey = stSerialKey;
+            stSerialKey++;
+            diary = new bool[12, 31];
+        }
+        public override string ToString()
+        {
+            return "Unit Key: " + HostingUnitKey.ToString()+ ":\n"+ FullDates();
+           }
+
+        public bool this[int month, int day]
+        {
+            get
+            {
+                return diary[month - 1, day - 1];
+            }
+            set
+            {
+                diary[month - 1, day - 1] = value;
+            }
+        }
+
+
+        public string FullDates()
+        {
+            string dates = " ";
+            for (DateTime help = new DateTime(2020, 1, 1); help.Year != 2021; help = help.AddDays(1))
+            //while(help.Year!=2021)//while it's in this year
+            {
+                if (this[help.Month, help.Day] == true)
+                {
+                    DateTime startDate = new DateTime(2020, help.Month, help.Day);
+                    help = help.AddDays(1);//goes to next day to check
+                    while (this[help.Month, help.Day] == true)
+                    {
+                        help = help.AddDays(1);//adds day to stay
+                    }
+                    help = help.AddDays(1);
+                    string format = "dd/MM";
+                    dates+=startDate.ToString(format)+"-" + help.ToString(format)+"\n";
+                }
+            }
+            return dates;
+        }
+        /*
+        public void FullDays()
+        {
+            for (DateTime help = new DateTime(2020, 1, 1); help.Year != 2021; help = help.AddDays(1))
+            //while(help.Year!=2021)//while it's in this year
+            {
+                if (this[help.Month, help.Day] == true)
+                {
+                    DateTime startDate = new DateTime(2020, help.Month, help.Day);
+                    help = help.AddDays(1);//goes to next day to check
+                    while (this[help.Month, help.Day] == true)
+                    {
+                        help = help.AddDays(1);//adds day to stay
+                    }
+                    help = help.AddDays(1);
+                    string format = "dd/MM";
+                    Console.Write(startDate.ToString(format));
+                    Console.WriteLine("-" + help.ToString(format));
+                }
+            }
+
+        }*/
+        public bool OrderStay()//orders a place in the hotel. if succeeded returns true. false otherwise
+        {
+            Console.WriteLine("enter day and month of stay");
+            int day = Convert.ToInt32(Console.ReadLine());
+            int month = Convert.ToInt32(Console.ReadLine());
+            DateTime date = new DateTime(2020, month, day);
+            Console.WriteLine("how many days is your stay?");
+            int stay = Convert.ToInt32(Console.ReadLine());
+            return checkDates(date, stay);
+        }
+
+        public bool ApproveRequest(GuestRequest ger)
+        {
+            int days = (ger.ReleaseDate - ger.EntryDate).Days;
+            if (checkDates(ger.EntryDate, days))
+            {
+                ger.IsApproved = true;
+                return true;
+            }
+            return false;
+
+        }
+
+        public bool checkDates(DateTime date, int stayLen)
+        {
+            DateTime temp = date;
+            for (int i = 1; i < stayLen - 1; i++)//checks all but the last day
+            {
+                //if (d > 31)//goes to next month
+                //{
+                //    d = 1;
+                //    m = m + 1;//goes to next month
+                //}
+                if (this[temp.Month, temp.Day] == true)//if it's booked
+                    return false;//not available
+                temp = temp.AddDays(1);
+            }
+            temp = date;//resets temp
+            for (int i = 0; i < stayLen - 1; i++)
+            {
+                //the last day's night isn't booked because he leaves in the morning
+                //if (d > 31)//goes to next month
+                //{
+                //    d = 1;
+                //    m = m + 1;//goes to next month
+                //}
+                this[temp.Month, temp.Day] = true;//updates to true
+                temp = temp.AddDays(1);
+            }
+            return true;
+        }
+
+        public int GetAnnualBusyDays()
+        {
+            int count = 0;
+            for (int i = 1; i < 12; i++)
+            {
+                for (int j = 1; j < 31; j++)
+                {
+                    if (this[i, j] == true)
+                        count++;
+                }
+            }
+            return count;
+            //count++;//to add last day
+            //Console.WriteLine("the total number of booked days is " + count);
+            //Console.WriteLine((count / 365.0).ToString("0.00%"));
+            //Console.WriteLine(" " + count / 365.0 + "percent of the total nights available");
+        }
+
+        public float GetAnnualBusyPercentage()
+        {
+            float count = 0;
+            for (int i = 1; i < 12; i++)
+            {
+                for (int j = 1; j < 31; j++)
+                {
+                    if (this[i, j] == true)
+                        count++;
+                }
+            }
+            return count / 365;
+        }
+
+        public int CompareTo(Object hosting)
+        {
+            int num1 = this.GetAnnualBusyDays();
+            int num2 = (hosting as HostingUnit).GetAnnualBusyDays();
+            return num1.CompareTo(num2);     
+        }
+        
+    }
+}
