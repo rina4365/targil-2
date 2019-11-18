@@ -1,0 +1,112 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    class Host :IComparable, IEnumerable<HostingUnit>
+    {
+        public int HostKey;
+        public List<HostingUnit> HostingUnitCollection;
+
+        public Host(int id, int numHosting)
+            {
+            HostingUnitCollection = new List<HostingUnit>();
+            HostKey = id;
+            for (int i=0;i<numHosting;i++)
+            {
+                HostingUnitCollection.Add(new HostingUnit());
+            }
+        }
+
+         public IEnumerator<HostingUnit> GetEnumerator()
+        {
+            return HostingUnitCollection.GetEnumerator();
+        }
+        public override string ToString()
+        {
+            string hostingUnitsToString = null;
+            for (int i = 0; i < HostingUnitCollection.Count; i++)
+                hostingUnitsToString += HostingUnitCollection[i].ToString();
+            return hostingUnitsToString;
+        }
+
+        private long SubmitRequest(GuestRequest guestRequest)
+        {
+            int i = 0;
+            while (i<HostingUnitCollection.Count)
+            {
+                //check isApproved changed to true
+                if (HostingUnitCollection[i].ApproveRequest(guestRequest))
+                {
+                    return HostingUnitCollection[i].HostingUnitKey;
+                }
+                i++;
+             }
+            return -1;
+
+        }
+
+        public int GetAnnualBusyDays()
+        {
+            int count = 0;
+            for (int i = 0; i < HostingUnitCollection.Count; i++)
+            {
+                count += HostingUnitCollection[i].GetAnnualBusyDays();
+            }
+            return count;
+        }
+        //public float GetAnnualBusyPercentage()
+        //{
+        //    return (float)(GetAnnualBusyDays()/(365.0*HostingUnitCollection.Count));
+        //}
+
+        public int CompareTo(object host)
+        {
+            int thisHost = this.GetAnnualBusyDays();
+            int otherHost = (host as Host).GetAnnualBusyDays();
+            return thisHost.CompareTo(otherHost);
+        }
+
+        public void SortUnits()
+        {
+            HostingUnitCollection.Sort();//maybe have to add comparing function
+        }
+
+        public bool AssignRequests(params GuestRequest[] requestArray)
+        {
+            bool flag = true;
+            for (int i=0;i<requestArray.Length; i++)
+            {
+                if (SubmitRequest(requestArray[i]) == -1)
+                    flag = false;
+            }
+            return flag;
+
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IEnumerable<HostingUnit>)HostingUnitCollection).GetEnumerator();
+        }
+
+        public HostingUnit this[int index]
+        {
+            get
+            {
+                for (int i = 0; i < HostingUnitCollection.Count; i++)
+                {
+                    if (HostingUnitCollection[i].HostingUnitKey == index)
+                        return HostingUnitCollection[i];
+                }
+                return null;
+            }
+        }
+
+       
+
+    }
+}
