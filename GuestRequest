@@ -1,0 +1,28 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ConsoleApp1
+{
+    class GuestRequest
+    {
+        public DateTime EntryDate;
+        public DateTime ReleaseDate;
+        public bool IsApproved;
+        //constructor
+        /*public GuestRequest(DateTime entry, DateTime release)
+        {
+            EntryDate = entry;
+            ReleaseDate = release;
+            IsApproved = false;
+        }*/
+        public override string ToString()
+        {
+            string format = "dd/mm/yy";
+            return "Entry Date: "+EntryDate.ToString(format)+"\n"+ "Release Date: "+ReleaseDate.ToString(format)+ "\n"+ "Is Approved: "+IsApproved.ToString();
+            
+        }
+    }
+}
